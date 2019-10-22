@@ -1,4 +1,4 @@
-import React, { PropTypes } from 'react'
+import React from 'react'
 import * as d3 from 'd3'
 import { fillColor } from '../utils'
 import tooltip from './Tooltip'
@@ -24,9 +24,6 @@ export default class Bubbles extends React.Component {
     if (nextProps.data !== this.props.data) {
       this.renderBubbles(nextProps.data)
     }
-    if (nextProps.groupByYear !== this.props.groupByYear) {
-      this.regroupBubbles(nextProps.groupByYear)
-    }
   }
 
   shouldComponentUpdate() {
@@ -47,18 +44,6 @@ export default class Bubbles extends React.Component {
 
   charge(d) {
     return -this.props.forceStrength * (d.radius ** 2.0)
-  }
-
-  regroupBubbles = (groupByYear) => {
-    const { forceStrength, yearCenters, center } = this.props
-    if (groupByYear) {
-      this.simulation.force('x', d3.forceX().strength(forceStrength).x(d => yearCenters[d.year].x))
-                      .force('y', d3.forceY().strength(forceStrength).y(d => yearCenters[d.year].y))
-    } else {
-      this.simulation.force('x', d3.forceX().strength(forceStrength).x(center.x))
-                      .force('y', d3.forceY().strength(forceStrength).y(center.y))
-    }
-    this.simulation.alpha(1).restart()
   }
 
   renderBubbles(data) {
@@ -87,38 +72,16 @@ export default class Bubbles extends React.Component {
   }
 
   render() {
+    const { width, height } = this.props
     return (
-      <g ref={this.onRef} className="bubbles" />
+      <svg className="bubbleChart" width={width} height={height}>
+        <g ref={this.onRef} className="bubbles" />
+      </svg>
     )
   }
 }
 
-Bubbles.propTypes = {
-  center: PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-  }),
-  forceStrength: PropTypes.number.isRequired,
-  groupByYear: PropTypes.bool.isRequired,
-  yearCenters: PropTypes.objectOf(PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    y: PropTypes.number.isRequired,
-  }).isRequired).isRequired,
-  data: PropTypes.arrayOf(PropTypes.shape({
-    x: PropTypes.number.isRequired,
-    id: PropTypes.string.isRequired,
-    radius: PropTypes.number.isRequired,
-    value: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-  })),
-}
-
-/*
-* Function called on mouseover to display the
-* details of a bubble in the tooltip.
-*/
 export function showDetail(d) {
-    // change outline to indicate hover state.
   d3.select(this).attr('stroke', 'black')
 
   const content = `<span class="name">Title: </span><span class="value">${
@@ -134,13 +97,8 @@ export function showDetail(d) {
   tooltip.showTooltip(content, d3.event)
 }
 
-/*
-* Hides tooltip
-*/
 export function hideDetail(d) {
-    // reset outline
   d3.select(this)
       .attr('stroke', d3.rgb(fillColor(d.group)).darker())
-
   tooltip.hideTooltip()
 }
