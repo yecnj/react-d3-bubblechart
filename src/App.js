@@ -11,7 +11,7 @@ export default class App extends React.Component {
   }
 
   componentDidMount() {
-    d3.csv('data/gates_money.csv', (err, data) => {
+    d3.csv('data/subject.csv', (err, data) => {
       if (err) {
         console.log(err)
         return

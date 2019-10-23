@@ -58,8 +58,11 @@ export default class Bubbles extends React.Component {
       .attr('r', 0)
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
-      .attr('fill', d => fillColor(d.group))
-      .attr('stroke', d => d3.rgb(fillColor(d.group)).darker())
+      .attr('fill', d => {
+        d.color = fillColor()
+        return d.color
+      })
+      .attr('stroke', d => d3.rgb(d.color).darker())
       .attr('stroke-width', 2)
       .on('mouseover', showDetail)  // eslint-disable-line
       .on('mouseout', hideDetail) // eslint-disable-line
@@ -87,11 +90,8 @@ export function showDetail(d) {
   const content = `<span class="name">Title: </span><span class="value">${
                   d.name
                   }</span><br/>` +
-                  `<span class="name">Amount: </span><span class="value">$${
+                  `<span class="name">Amount: </span><span class="value">${
                   d.value
-                  }</span><br/>` +
-                  `<span class="name">Year: </span><span class="value">${
-                  d.year
                   }</span>`
 
   tooltip.showTooltip(content, d3.event)
@@ -99,6 +99,6 @@ export function showDetail(d) {
 
 export function hideDetail(d) {
   d3.select(this)
-      .attr('stroke', d3.rgb(fillColor(d.group)).darker())
+      .attr('stroke', d3.rgb(d.color).darker())
   tooltip.hideTooltip()
 }
