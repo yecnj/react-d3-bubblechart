@@ -8,14 +8,19 @@ export function createNodes(rawData) {
       .range([2, 85])
       .domain([0, maxAmount])
 
-  const myNodes = rawData.map((d, index) => ({
-    id: d.index,
-    radius: radiusScale(+d["2019"]),
-    value: +d["2019"],
-    name: d.key,
-    x: Math.random() * 900,
-    y: Math.random() * 800,
-  }))
+  const myNodes = rawData.map((d, index) => {
+    let exceptKey = {...d};
+    delete exceptKey.key
+    Object.entries(exceptKey).map( v => exceptKey[v[0]] = radiusScale(+v[1]))
+    return {
+      id: index,
+      radius: exceptKey,
+      value: {...d},
+      name: d.key,
+      x: Math.random() * 900,
+      y: Math.random() * 800,
+    }
+  })
 
   myNodes.sort((a, b) => b.value - a.value)
 

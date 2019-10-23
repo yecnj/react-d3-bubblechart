@@ -18,6 +18,7 @@ export default class Bubbles extends React.Component {
 
   state = {
     g: null,
+    year: 2019
   }
 
   componentWillReceiveProps(nextProps) {
@@ -43,7 +44,11 @@ export default class Bubbles extends React.Component {
   }
 
   charge(d) {
-    return -this.props.forceStrength * (d.radius ** 2.0)
+    return -this.props.forceStrength * (d.radius[this.state.year] ** 2.0)
+  }
+
+  updateBubbles(data) {
+    this.state.g.selectAll('.bubble')
   }
 
   renderBubbles(data) {
@@ -59,6 +64,7 @@ export default class Bubbles extends React.Component {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('fill', d => {
+        d.year = this.state.year
         d.color = fillColor()
         return d.color
       })
@@ -67,7 +73,7 @@ export default class Bubbles extends React.Component {
       .on('mouseover', showDetail)  // eslint-disable-line
       .on('mouseout', hideDetail) // eslint-disable-line
 
-    bubblesE.transition().duration(2000).attr('r', d => d.radius).on('end', () => {
+    bubblesE.transition().duration(2000).attr('r', d => d.radius[this.state.year]).on('end', () => {
       this.simulation.nodes(data)
       .alpha(1)
       .restart()
@@ -77,21 +83,23 @@ export default class Bubbles extends React.Component {
   render() {
     const { width, height } = this.props
     return (
-      <svg className="bubbleChart" width={width} height={height}>
-        <g ref={this.onRef} className="bubbles" />
-      </svg>
+      <div>
+        <h1>{ this.state.year }</h1>
+        <svg className="bubbleChart" width={width} height={height}>
+          <g ref={this.onRef} className="bubbles" />
+        </svg>
+      </div>
     )
   }
 }
 
 export function showDetail(d) {
   d3.select(this).attr('stroke', 'black')
-
   const content = `<span class="name">Title: </span><span class="value">${
                   d.name
                   }</span><br/>` +
                   `<span class="name">Amount: </span><span class="value">${
-                  d.value
+                  d.value[d.year]
                   }</span>`
 
   tooltip.showTooltip(content, d3.event)
