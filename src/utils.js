@@ -5,7 +5,7 @@ export function createNodes(rawData) {
 
   const radiusScale = d3.scalePow()
       .exponent(0.5)
-      .range([2, 85])
+      .range([0, 85])
       .domain([0, maxAmount])
 
   const myNodes = rawData.map((d, index) => {

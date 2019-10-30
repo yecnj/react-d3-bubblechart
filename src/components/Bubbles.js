@@ -3,6 +3,46 @@ import * as d3 from 'd3'
 import { fillColor } from '../utils'
 import tooltip from './Tooltip'
 
+const genSlideStyle = (value) => {
+  return {
+    point: {
+      left: `calc(${value * 20}% - ${5 + 3 * value}px)`,
+    },
+    range: {
+      width: `${value * 20}%`,
+    },
+  };
+};
+
+class RangeSlider extends React.Component {
+  constructor (props) {
+    super(props);
+    this.state = {
+      value: 2019,
+    }
+  }
+  
+  handleChange = (e) => {
+    this.setState({ value: e.target.value });
+    this.props.onChange(e)
+  }
+  
+  render () {
+    const slideStyle = genSlideStyle(this.state.value);
+    return (
+      <div className="range">
+        <span className="range-value" style={slideStyle.range} />
+        <span className="circle" style={slideStyle.point} />
+        <input
+          className="range-slide" name="range" type="range"
+          min="2016" max="2019" step="1"
+          value={this.state.value} onChange={this.handleChange}
+        />
+      </div>
+    );
+  }
+}
+
 export default class Bubbles extends React.Component {
   constructor(props) {
     super(props)
@@ -18,19 +58,14 @@ export default class Bubbles extends React.Component {
 
   state = {
     g: null,
-    year: 2019
+    year: 2019,
+    bubbles: null
   }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.data !== this.props.data) {
       this.renderBubbles(nextProps.data)
     }
-  }
-
-  shouldComponentUpdate() {
-    // we will handle moving the nodes on our own with d3.js
-    // make React ignore this component
-    return false
   }
 
   onRef = (ref) => {
@@ -47,8 +82,14 @@ export default class Bubbles extends React.Component {
     return -this.props.forceStrength * (d.radius[this.state.year] ** 2.0)
   }
 
-  updateBubbles(data) {
-    this.state.g.selectAll('.bubble')
+  updateBubbles = (data) => {
+    this.setState({ year: data.target.value })
+    this.state.bubbles
+      .transition().duration(1000).attr('r', d => d.radius[data.target.value]).on('end', () => {
+        this.simulation.nodes(data)
+        .alpha(1)
+        .restart()
+      })
   }
 
   renderBubbles(data) {
@@ -64,15 +105,15 @@ export default class Bubbles extends React.Component {
       .attr('cx', d => d.x)
       .attr('cy', d => d.y)
       .attr('fill', d => {
-        d.year = this.state.year
         d.color = fillColor()
         return d.color
       })
       .attr('stroke', d => d3.rgb(d.color).darker())
       .attr('stroke-width', 2)
-      .on('mouseover', showDetail)  // eslint-disable-line
+      .on('mouseover', d => showDetail(d, this.state.year))  // eslint-disable-line
       .on('mouseout', hideDetail) // eslint-disable-line
 
+    this.setState({ bubbles: bubblesE })
     bubblesE.transition().duration(2000).attr('r', d => d.radius[this.state.year]).on('end', () => {
       this.simulation.nodes(data)
       .alpha(1)
@@ -88,18 +129,19 @@ export default class Bubbles extends React.Component {
         <svg className="bubbleChart" width={width} height={height}>
           <g ref={this.onRef} className="bubbles" />
         </svg>
+        <RangeSlider onChange={this.updateBubbles}/>
       </div>
     )
   }
 }
 
-export function showDetail(d) {
+export function showDetail(d, year) {
   d3.select(this).attr('stroke', 'black')
   const content = `<span class="name">Title: </span><span class="value">${
                   d.name
                   }</span><br/>` +
                   `<span class="name">Amount: </span><span class="value">${
-                  d.value[d.year]
+                  d.value[year]
                   }</span>`
 
   tooltip.showTooltip(content, d3.event)
