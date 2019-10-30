@@ -3,6 +3,8 @@ import * as d3 from 'd3'
 import { fillColor } from '../utils'
 import tooltip from './Tooltip'
 
+import './Bubbles.css'
+
 const genSlideStyle = (value) => {
   return {
     point: {
@@ -85,8 +87,8 @@ export default class Bubbles extends React.Component {
   updateBubbles = (data) => {
     this.setState({ year: data.target.value })
     this.state.bubbles
-      .transition().duration(1000).attr('r', d => d.radius[data.target.value]).on('end', () => {
-        this.simulation.nodes(data)
+      .transition().duration(500).attr('r', d => d.radius[data.target.value]).on('end', () => {
+        this.simulation.nodes(this.props.data)
         .alpha(1)
         .restart()
       })
@@ -126,10 +128,10 @@ export default class Bubbles extends React.Component {
     return (
       <div>
         <h1>{ this.state.year }</h1>
+        <RangeSlider onChange={this.updateBubbles}/>
         <svg className="bubbleChart" width={width} height={height}>
           <g ref={this.onRef} className="bubbles" />
         </svg>
-        <RangeSlider onChange={this.updateBubbles}/>
       </div>
     )
   }

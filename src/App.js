@@ -25,7 +25,7 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="App">
-        <Bubbles width={960} height={640} data={this.state.data} forceStrength={0.03} center={{x: 480, y: 320}} />
+        <Bubbles width={960} height={480} data={this.state.data} forceStrength={0.03} center={{x: 480, y: 240}} />
       </div>
     )
   }
